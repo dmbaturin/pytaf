@@ -80,7 +80,7 @@ class Decoder:
         result = ""
 
         if wind["direction"] == "000":
-            result += "calm"
+            return("calm")
         elif wind["direction"] == "VRB":
             result += "variable"
         else:
