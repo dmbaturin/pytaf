@@ -1,8 +1,8 @@
 from taf import TAF
 
 class DecodeError:
-    def __init__(msg):
-        self.msg = msg
+    def __init__(self, msg):
+        self.strerror = msg
 
 class Decoder:
     def __init__(self, taf):
