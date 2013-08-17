@@ -283,11 +283,11 @@ class Decoder:
 
         if re.match(".*(1[12]|[04-9])$", _date):
             suffix = "th"
-        elif re.match(".*1", _date):
+        elif re.match(".*1$", _date):
             suffix = "st"
-        elif re.match(".*2", _date):
+        elif re.match(".*2$", _date):
             suffix = "nd"
-        elif re.match(".*3", _date):
+        elif re.match(".*3$", _date):
             suffix = "rd"
 
         return(suffix)
