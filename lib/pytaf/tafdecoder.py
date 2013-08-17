@@ -1,3 +1,4 @@
+import re
 from taf import TAF
 
 class DecodeError:
@@ -45,34 +46,68 @@ class Decoder:
     def _decode_header(self, header):
         result = ""
 
+        # Ensure it's side effect free
+        _header = header
+
         # Type
-        if header["type"] == "AMD":
-            result += "TAF amended for"
-        elif header["type"] == "COR":
-            result += "TAF corrected for"
-        elif header["type"] == "RTD":
-           result += "TAF related for"
+        if _header["type"] == "AMD":
+            result += "TAF amended for "
+        elif _header["type"] == "COR":
+            result += "TAF corrected for "
+        elif _header["type"] == "RTD":
+           result += "TAF related for "
         else:
-            result += "TAF for"
+            result += "TAF for "
 
-        result += """ %(icao_code)s issued %(origin_date)s %(origin_hours)s:%(origin_minutes)s UTC, valid from %(valid_from_date)s %(valid_from_hours)s:00 UTC to %(valid_till_date)s %(valid_till_hours)s:00 UTC """
+        # Add ordinal suffix
+        suffix = self._get_ordinal_suffix(_header["origin_date"])
+        _header["origin_date"] = _header["origin_date"] + suffix
 
-        result = result % header
+        result += ("%(icao_code)s issued %(origin_hours)s:%(origin_minutes)s UTC on the %(origin_date)s, " 
+                   "valid from %(valid_from_date)s %(valid_from_hours)s:00 UTC to %(valid_till_date)s %(valid_till_hours)s:00 UTC")
+
+        result = result % _header
 
         return(result)
 
     def _decode_group_header(self, header):
         result = ""
+        _header = header
 
-        if header.has_key("type"):
-            if header["type"] == "FM":
-                result += "From %s %s:%s: " % (header["from_date"], header["from_hours"], header["from_minutes"])
-            elif header["type"] == "PROB":
-                result += "Probability %s%% of the following between %s %s:00 and %s %s:00: " % (header["probability"], header["from_date"], header["from_hours"], header["till_date"], header["till_hours"])
+        from_str = "From %(from_hours)s:%(from_minutes)s on the %(from_date)s: "
+        prob_str = "Probability %(probability)s%% of the following between %(from_hours)s:00 on the %(from_date)s and %(till_hours)s:00 on the %(till_date)s: "
+        tempo_str = "Temporarily between %(from_hours)s:00 on the %(from_date)s and %(till_hours)s:00 on the %(from_date)s: "
+        becmg_str = "Gradual change to between %(from_hours)s:00 on the %(from_date)s and %(till_hours)s:00 on the %(till_date)s"
+
+        if _header.has_key("type"):
+            # Add ordinal suffix
+            if _header.has_key("from_date"):
+                from_suffix = self._get_ordinal_suffix(_header["from_date"])
+                _header["from_date"] = _header["from_date"] + from_suffix
+            if _header.has_key("till_date"):
+                till_suffix = self._get_ordinal_suffix(_header["till_date"])
+                _header["till_date"] = _header["till_date"] + till_suffix
+
+            if _header["type"] == "FM":
+                result += from_str % { "from_date":    _header["from_date"], 
+                                       "from_hours":   _header["from_hours"],
+                                       "from_minutes": _header["from_minutes"] }
+            elif _header["type"] == "PROB":
+                result += prob_str % { "probability": _header["probability"],
+                                       "from_date":   _header["from_date"], 
+                                       "from_hours":  _header["from_hours"],
+                                       "till_date":   _header["till_date"],
+                                       "till_hours":  _header["till_hours"] }
             elif header["type"] == "TEMPO":
-                result += "Temporarily between %s %s:00 and %s %s:00: " % (header["from_date"], header["from_hours"], header["till_date"], header["till_hours"])
+                result += tempo_str % { "from_date":  _header["from_date"], 
+                                        "from_hours": _header["from_hours"], 
+                                        "till_date":  _header["till_date"], 
+                                        "till_hours": _header["till_hours"] }
             elif header["type"] == "BECMG":
-                result += "Gradual change to between %s %s:00 and %s %s:00" % (header["from_date"], header["from_hours"], header["till_date"], header["till_hours"])
+                result += becmg_str % { "from_date":  _header["from_date"], 
+                                        "from_hours": _header["from_hours"], 
+                                        "till_date":  _header["till_date"],
+                                        "till_hours": _header["till_hours"] }
 
         return(result)
 
@@ -241,4 +276,19 @@ class Decoder:
         if maintenance:
             return "Station is under maintenance check\n"
 
+    def _get_ordinal_suffix(self, date):
+        _date = str(date)
+
+        suffix = ""
+
+        if re.match(".*(1[12]|[04-9])$", _date):
+            suffix = "th"
+        elif re.match(".*1", _date):
+            suffix = "st"
+        elif re.match(".*2", _date):
+            suffix = "nd"
+        elif re.match(".*3", _date):
+            suffix = "rd"
+
+        return(suffix)
         
