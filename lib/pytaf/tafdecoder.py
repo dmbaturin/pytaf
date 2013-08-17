@@ -98,12 +98,12 @@ class Decoder:
                                        "from_hours":  _header["from_hours"],
                                        "till_date":   _header["till_date"],
                                        "till_hours":  _header["till_hours"] }
-            elif header["type"] == "TEMPO":
+            elif _header["type"] == "TEMPO":
                 result += tempo_str % { "from_date":  _header["from_date"], 
                                         "from_hours": _header["from_hours"], 
                                         "till_date":  _header["till_date"], 
                                         "till_hours": _header["till_hours"] }
-            elif header["type"] == "BECMG":
+            elif _header["type"] == "BECMG":
                 result += becmg_str % { "from_date":  _header["from_date"], 
                                         "from_hours": _header["from_hours"], 
                                         "till_date":  _header["till_date"],
