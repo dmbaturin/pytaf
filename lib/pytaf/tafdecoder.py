@@ -60,11 +60,12 @@ class Decoder:
             result += "TAF for "
 
         # Add ordinal suffix
-        suffix = self._get_ordinal_suffix(_header["origin_date"])
-        _header["origin_date"] = _header["origin_date"] + suffix
+        _header["origin_date"] = _header["origin_date"] + self._get_ordinal_suffix(_header["origin_date"])
+        _header["valid_from_date"] = _header["valid_from_date"] + self._get_ordinal_suffix(_header["valid_from_date"]) 
+        _header["valid_till_date" ] = _header["valid_till_date"] + self._get_ordinal_suffix(_header["valid_till_date"])
 
         result += ("%(icao_code)s issued %(origin_hours)s:%(origin_minutes)s UTC on the %(origin_date)s, " 
-                   "valid from %(valid_from_date)s %(valid_from_hours)s:00 UTC to %(valid_till_date)s %(valid_till_hours)s:00 UTC")
+                   "valid from %(valid_from_hours)s:00 UTC on the %(valid_from_date)s to %(valid_till_hours)s:00 UTC on the %(valid_till_date)s")
 
         result = result % _header
 
