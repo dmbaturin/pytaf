@@ -253,6 +253,27 @@ class Decoder:
             if group["phenomenon"] == "DS":
                 ii_result += "dust storm"
 
+            # Fix the most ugly grammar
+            if group["modifier"] == "SH" and group["phenomenon"] == "RA":
+                ii_result = "showers"
+            if group["modifier"] == "SH" and group["phenomenon"] == "SN":
+                ii_result = "snow showers"
+            if group["modifier"] == "SH" and group["phenomenon"] == "SG":
+                ii_result = "snow grain showers"
+            if group["modifier"] == "SH" and group["phenomenon"] == "PL":
+                ii_result = "ice pellet showers"
+            if group["modifier"] == "SH" and group["phenomenon"] == "IC":
+                ii_result = "ice showers"
+            if group["modifier"] == "SH" and group["phenomenon"] == "GS":
+                ii_result = "snow pellet showers"
+            if group["modifier"] == "SH" and group["phenomenon"] == "GR":
+                ii_result = "hail showers"
+
+            if group["modifier"] == "TS" and group["phenomenon"] == "RA":
+                ii_result = "thunderstorms and rain"
+            if group["modifier"] == "TS" and group["phenomenon"] == "UP":
+                ii_result = "thunderstorms with unknown precipitation"
+
             if group["intensity"] == "+":
                 i_result = "heavy %s" % ii_result
             elif group["intensity"] == "-":
@@ -267,6 +288,9 @@ class Decoder:
             ii_result = ""
 
         result = ", ".join(list)
+
+        # Remove extra whitespace, if any
+        result = re.sub(r'\s+', ' ', result)
         return(result)
 
     def _decode_windshear(self, windshear):
