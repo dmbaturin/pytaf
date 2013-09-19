@@ -8,6 +8,16 @@ class TAF:
     """ TAF "envelope" parser """
 
     def __init__(self, string):
+        """ 
+        Initializes the object with TAF report text.
+
+        Args:
+            string: TAF report string
+
+        Raises:
+            MalformedTAF: An error parsing the TAF report
+        """
+
         # Instance variables
         self._raw_taf = None
         self._taf_header = None
@@ -37,7 +47,17 @@ class TAF:
         self._maintenance = self._parse_maintenance(self._raw_taf)
 
     def _init_header(self, string):
-        """ Extract header part from TAF string and populate header dict """
+        """ Extracts header part from TAF string and populates header dict
+
+        Args:
+            TAF report string
+
+        Raises:
+            MalformedTAF: An error parsing the report
+
+        Returns:
+            Header dictionary
+        """
 
         taf_header_pattern = """
             ^
@@ -70,7 +90,15 @@ class TAF:
             raise MalformedTAF("No valid TAF header found")
 
     def _init_groups(self, string):
-        """ Extract weather groups """
+        """ Extracts weather groups (FM, PROB etc.) and populates group list
+
+        Args:
+            TAF report string
+
+        Raises:
+            MalformedTAF: Group decoding error
+        
+        """
 
         taf_group_pattern = """
             (?:Z\s+\d{4}/\d{4}|FM|PROB|TEMPO|BECMG)[A-Z0-9\+\-/\s$]+?(?=FM|PROB|TEMPO|BECMG|$)
