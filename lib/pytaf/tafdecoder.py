@@ -28,7 +28,7 @@ class Decoder:
                 result += "    Visibility: %s \n" % self._decode_visibility(group["visibility"])
 
             if group["clouds"]:
-                result += "    Clouds: %s \n" % self._decode_clouds(group["clouds"])
+                result += "    Sky conditions: %s \n" % self._decode_clouds(group["clouds"])
 
             if group["weather"]:
                 result += "    Weather: %s \n" % self._decode_weather(group["weather"])
@@ -153,27 +153,37 @@ class Decoder:
         for layer in clouds:
             if layer["layer"] == "SKC" or layer["layer"] == "CLR":
                 return "sky clear"
+
             if layer["layer"] == "SCT":
-                i_result += "scattered "
+                layer_type = "scattered"
             elif layer["layer"] == "BKN":
-                i_result += "broken "
+                layer_type = "broken"
             elif layer["layer"] == "FEW":
-                i_result += "few "
+                layer_type = "few"
             elif layer["layer"] == "OVC":
-                i_result += "overcast "
+                layer_type = "overcast"
 
             if layer["type"] == "CB":
-                i_result += "cumulonimbus "
+                type = "cumulonimbus"
             elif layer["type"] == "CU":
-                i_result += "cumulus "
+                type = "cumulus"
             elif layer["type"] == "TC":
-                i_result += "towering cumulus "
+                type = "towering cumulus"
             elif layer["type"] == "CI":
-                i_result += "cirrus "
+                type = "cirrus"
+            else:
+                type = ""
 
-            i_result += "at %d feet" % (int(layer["ceiling"])*100)
-            list.append(i_result)
-            i_result = ""
+            result = "%s %s clouds at %d feet" % (layer_type, type, int(layer["ceiling"])*100)
+
+            # Remove extra whitespace, if any
+            result = re.sub(r'\s+', ' ', result)
+
+            list.append(result)
+
+            layer = ""
+            type = ""
+            result = ""
 
         result = ", ".join(list)
         return(result)
