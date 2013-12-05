@@ -223,11 +223,11 @@ class TAF:
             (?= \s|$ )
         """
 
-        sky_clear_pattern = """ (SKC|CLR) """
+        special_case_pattern = """ (SKC|CLR|NSC|CAVOK|CAVU) """
 
         clouds = []
 
-        clear = re.search(sky_clear_pattern, string, re.VERBOSE)
+        clear = re.search(special_case_pattern, string, re.VERBOSE)
         if clear:
             clouds.append({"layer": clear.group(0)})
             return(clouds)

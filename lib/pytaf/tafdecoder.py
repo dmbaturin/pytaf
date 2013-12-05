@@ -163,6 +163,15 @@ class Decoder:
             if layer["layer"] == "SKC" or layer["layer"] == "CLR":
                 return "sky clear"
 
+            if layer["layer"] == "NSC":
+                return "no significant cloud"
+
+            if layer["layer"] == "CAVOK":
+                return "ceiling and visibility are OK"
+
+            if layer["layer"] == "CAVU":
+                return "ceiling and visibility unrestricted"
+
             if layer["layer"] == "SCT":
                 layer_type = "scattered"
             elif layer["layer"] == "BKN":
