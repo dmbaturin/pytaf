@@ -113,6 +113,7 @@ class Decoder:
         return(result)
 
     def _decode_wind(self, wind):
+        unit = ""
         result = ""
 
         if wind["direction"] == "000":
@@ -122,10 +123,18 @@ class Decoder:
         else:
             result += "from %s degrees" % wind["direction"]
 
-        result += " at %s knots" % wind["speed"]
+        if wind["unit"] == "KT":
+            unit = "knots"
+        elif wind["unit"] == "MPS":
+            unit = "meters per second"
+        else:
+            # Unlikely, but who knows
+            unit = "(unknown unit)"
+
+        result += " at %s %s" % (wind["speed"], unit)
 
         if wind["gust"]:
-            result += " gusting to %s knots" % wind["gust"]
+            result += " gusting to %s %s" % (wind["gust"], unit)
 
         return(result)
 
