@@ -1,11 +1,11 @@
 import re
-from taf import TAF
+from .taf import TAF
 
-class DecodeError:
+class DecodeError(Exception):
     def __init__(self, msg):
         self.strerror = msg
 
-class Decoder:
+class Decoder(object):
     def __init__(self, taf):
         if isinstance(taf, TAF):
             self._taf = taf
@@ -80,12 +80,12 @@ class Decoder:
         tempo_str = "Temporarily between %(from_hours)s:00 on the %(from_date)s and %(till_hours)s:00 on the %(from_date)s: "
         becmg_str = "Gradual change to the following between %(from_hours)s:00 on the %(from_date)s and %(till_hours)s:00 on the %(till_date)s: "
 
-        if _header.has_key("type"):
+        if "type" in _header:
             # Add ordinal suffix
-            if _header.has_key("from_date"):
+            if "from_date" in _header:
                 from_suffix = self._get_ordinal_suffix(_header["from_date"])
                 _header["from_date"] = _header["from_date"] + from_suffix
-            if _header.has_key("till_date"):
+            if "till_date" in _header:
                 till_suffix = self._get_ordinal_suffix(_header["till_date"])
                 _header["till_date"] = _header["till_date"] + till_suffix
 
@@ -141,7 +141,7 @@ class Decoder:
     def _decode_visibility(self, visibility):
         result = ""
 
-        if visibility.has_key("more"):
+        if "more" in visibility:
             if visibility["more"]:
                 result += "more than "
 

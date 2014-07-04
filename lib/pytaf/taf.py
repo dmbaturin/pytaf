@@ -4,7 +4,7 @@ class MalformedTAF(Exception):
     def __init__(self, msg):
         self.strerror = msg
 
-class TAF:
+class TAF(object):
     """ TAF "envelope" parser """
 
     def __init__(self, string):
