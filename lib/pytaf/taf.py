@@ -68,11 +68,11 @@ class TAF(object):
             \s* # There may or may not be space as COR/AMD/RTD is optional
             (?P<icao_code> [A-Z]{4}) # Station ICAO code
             
-            \s+
-            (?P<origin_date> \d{2})
-            (?P<origin_hours> \d{2})
-            (?P<origin_minutes> \d{2})
-            Z # Zulu time (UTC, that is)
+            \s* # at some aerodromes does not appear
+            (?P<origin_date> \d{0,2}) # at some aerodromes does not appear
+            (?P<origin_hours> \d{0,2}) # at some aerodromes does not appear
+            (?P<origin_minutes> \d{0,2}) # at some aerodromes does not appear
+            Z? # Zulu time (UTC, that is) # at some aerodromes does not appear
             
             \s+
             (?P<valid_from_date> \d{2})
@@ -83,7 +83,7 @@ class TAF(object):
         """
 
         header = re.match(taf_header_pattern, string, re.VERBOSE)
-
+        
         if header:
              return header.groupdict()
         else:
