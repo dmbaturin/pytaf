@@ -63,7 +63,7 @@ class TAF(object):
             ^
             TAF*    # TAF header (at times missing or duplicate)
             \s+
-            (?P<type> (COR|AMD|RTD)){0,1} # Corrected/Amended/Related
+            (?P<type> (COR|AMD|RTD)){0,1} # Corrected/Amended/Delayed
              
             \s* # There may or may not be space as COR/AMD/RTD is optional
             (?P<icao_code> [A-Z]{4}) # Station ICAO code
@@ -74,18 +74,18 @@ class TAF(object):
             (?P<origin_minutes> \d{0,2}) # at some aerodromes does not appear
             Z? # Zulu time (UTC, that is) # at some aerodromes does not appear
             
-            \s+
-            (?P<valid_from_date> \d{2})
-            (?P<valid_from_hours> \d{2})
-            /
-            (?P<valid_till_date> \d{2})
-            (?P<valid_till_hours> \d{2})
+            \s*
+            (?P<valid_from_date> \d{0,2})
+            (?P<valid_from_hours> \d{0,2})
+            /*
+            (?P<valid_till_date> \d{0,2})
+            (?P<valid_till_hours> \d{0,2})
         """
 
         header = re.match(taf_header_pattern, string, re.VERBOSE)
         
         if header:
-             return header.groupdict()
+            return header.groupdict()
         else:
             raise MalformedTAF("No valid TAF header found")
 
@@ -99,9 +99,9 @@ class TAF(object):
             MalformedTAF: Group decoding error
         
         """
-
+        
         taf_group_pattern = """
-            (?:Z\s+\d{4}/\d{4}|FM|PROB|TEMPO|BECMG)[A-Z0-9\+\-/\s$]+?(?=FM|PROB|TEMPO|BECMG|$)
+            (?:[\s\S]|FM|PROB|TEMPO|BECMG)[A-Z0-9\+\-/\s$]+?(?=FM|PROB|TEMPO|BECMG|$)
         """
 
         group_list = []
