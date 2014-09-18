@@ -77,7 +77,7 @@ class Decoder(object):
 
         from_str = "From %(from_hours)s:%(from_minutes)s on the %(from_date)s: "
         prob_str = "Probability %(probability)s%% of the following between %(from_hours)s:00 on the %(from_date)s and %(till_hours)s:00 on the %(till_date)s: "
-        tempo_str = "Temporarily between %(from_hours)s:00 on the %(from_date)s and %(till_hours)s:00 on the %(from_date)s: "
+        tempo_str = "Temporarily between %(from_hours)s:00 on the %(from_date)s and %(till_hours)s:00 on the %(till_date)s: "
         becmg_str = "Gradual change to the following between %(from_hours)s:00 on the %(from_date)s and %(till_hours)s:00 on the %(till_date)s: "
 
         if "type" in _header:
