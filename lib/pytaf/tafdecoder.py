@@ -185,7 +185,7 @@ class Decoder(object):
                 type = "cumulonimbus"
             elif layer["type"] == "CU":
                 type = "cumulus"
-            elif layer["type"] == "TC":
+            elif layer["type"] == "TCU":
                 type = "towering cumulus"
             elif layer["type"] == "CI":
                 type = "cirrus"

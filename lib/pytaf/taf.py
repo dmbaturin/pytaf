@@ -133,7 +133,7 @@ class TAF(object):
         fm_pattern = """
             (?P<type> FM) (?P<from_date>\d{2}) (?P<from_hours>\d{2})(?P<from_minutes> \d{2})
         """
-
+        
         # PROB|TEMPO|BECMG header pattern, they have almost the same format
         ptb_pattern = """
             (?P<type> PROB|TEMPO|BECMG)
@@ -219,7 +219,7 @@ class TAF(object):
             (?<= \s )
             (?P<layer> BKN|SCT|FEW|OVC)
             (?P<ceiling> \d{3})
-            (?P<type> CU|CB|TC|CI){0,1}
+            (?P<type> CU|CB|TCU|CI){0,1}
             (?= \s|$ )
         """
 
