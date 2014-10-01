@@ -318,7 +318,7 @@ class TAF(object):
             return(maintenance.group(0))
         else:
             return(None)
-
+            
     def get_taf(self):
         """ Return raw TAF string the object was initialized with """
         return self.__raw_taf
