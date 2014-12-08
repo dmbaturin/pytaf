@@ -101,7 +101,7 @@ class TAF(object):
         """
         
         taf_group_pattern = """
-            (?:FM|(?:PROB(?:\d{1,2})\s*(?:TEMPO)?)|TEMPO|BECMG)[A-Z0-9\+\-/\s$]+?(?=FM|PROB|TEMPO|BECMG|$)
+            (?:FM|(?:PROB(?:\d{1,2})\s*(?:TEMPO)?)|TEMPO|BECMG|[\S\s])[A-Z0-9\+\-/\s$]+?(?=FM|PROB|TEMPO|BECMG|$)
         """
 
         group_list = []
