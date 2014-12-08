@@ -78,6 +78,7 @@ class Decoder(object):
         from_str = "From %(from_hours)s:%(from_minutes)s on the %(from_date)s: "
         prob_str = "Probability %(probability)s%% of the following between %(from_hours)s:00 on the %(from_date)s and %(till_hours)s:00 on the %(till_date)s: "
         tempo_str = "Temporarily between %(from_hours)s:00 on the %(from_date)s and %(till_hours)s:00 on the %(till_date)s: "
+        prob_tempo_str = "Probability %(probability)s%% of the following temporarily between %(from_hours)s:00 on the %(from_date)s and %(till_hours)s:00 on the %(till_date)s: "
         becmg_str = "Gradual change to the following between %(from_hours)s:00 on the %(from_date)s and %(till_hours)s:00 on the %(till_date)s: "
 
         if "type" in _header:
@@ -93,12 +94,19 @@ class Decoder(object):
                 result += from_str % { "from_date":    _header["from_date"], 
                                        "from_hours":   _header["from_hours"],
                                        "from_minutes": _header["from_minutes"] }
-            elif _header["type"] == "PROB":
+            elif _header["type"] == "PROB%s" % (_header["probability"]):
                 result += prob_str % { "probability": _header["probability"],
                                        "from_date":   _header["from_date"], 
                                        "from_hours":  _header["from_hours"],
                                        "till_date":   _header["till_date"],
                                        "till_hours":  _header["till_hours"] }
+            elif "PROB" in _header["type"] and "TEMPO" in _header["type"]:
+                result += prob_tempo_str % { "probability": _header["probability"],
+                                           "from_date":   _header["from_date"], 
+                                           "from_hours":  _header["from_hours"],
+                                           "till_date":   _header["till_date"],
+                                           "till_hours":  _header["till_hours"] }
+                                       
             elif _header["type"] == "TEMPO":
                 result += tempo_str % { "from_date":  _header["from_date"], 
                                         "from_hours": _header["from_hours"], 

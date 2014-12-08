@@ -101,7 +101,7 @@ class TAF(object):
         """
         
         taf_group_pattern = """
-            (?:[\s\S]|FM|PROB|TEMPO|BECMG)[A-Z0-9\+\-/\s$]+?(?=FM|PROB|TEMPO|BECMG|$)
+            (?:FM|(?:PROB(?:\d{1,2})\s*(?:TEMPO)?)|TEMPO|BECMG)[A-Z0-9\+\-/\s$]+?(?=FM|PROB|TEMPO|BECMG|$)
         """
 
         group_list = []
@@ -136,8 +136,7 @@ class TAF(object):
         
         # PROB|TEMPO|BECMG header pattern, they have almost the same format
         ptb_pattern = """
-            (?P<type> PROB|TEMPO|BECMG)
-            (?P<probability>\d{1,2}){0,1} # For PROB, this is probability
+            (?P<type> (?:PROB(?P<probability>\d{1,2})\s*(?:TEMPO)?)|TEMPO|BECMG)
             \s+
             (?P<from_date> \d{2})
             (?P<from_hours> \d{2})
