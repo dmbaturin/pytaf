@@ -83,8 +83,8 @@ output.
     import pytaf
 
     taf = pytaf.TAF("<my TAF string>")
-    decoder = pytaf.Decoder(t)
-    print d.decode_taf()
+    decoder = pytaf.Decoder(taf)
+    print decoder.decode_taf()
 
 
 Hacking
