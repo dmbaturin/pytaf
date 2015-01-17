@@ -14,7 +14,7 @@ next 24-30 hours, and includes highly detailed information about
 current and expected meteorological conditions, like exact
 clouds type and ceiling, as it's important for flight safety.
 
-This is what a TAF report may look like:
+This is what a TAF report from the United States may look like:
 
     TAF 
       AMD KMKE 172034Z 1721/1824 14013G19KT P6SM SCT028 BKN035 BKN250 
@@ -24,7 +24,7 @@ This is what a TAF report may look like:
      FM181500 18009KT P6SM VCSH BKN050 
      FM182100 16012KT P6SM SCT050 BKN150
 
-It reads as:
+What it means:
 
     "TAF AMD KMKE": TAF amended for General Mitchell International Airport,
 
@@ -59,11 +59,16 @@ Not different enough for people to have problems understanding it,
 but different enough to make implementatng a universal parser
 very hard, if not impossible.
 
-United States civil airports produce the most machine friendly reports,
-and this library primarily deals with those. TAFs from other countries
-are very likely not to be parsed and interpeted correctly.
+United Stated civil airports produce the most machine friendly and
+standardized reports and those are the most likely to be interpreted correctly.
+Effort was made to interpret European Union civil airport reports
+properly, but they exhibit more regional variations, so the interpretation
+may be incomplete.
+Remember that the interpretation is provided for information purposes only
+and should not be used for flight planning (at least not without inspecting
+the original undecoded report).
 
-Information about US TAF format can be found at NOAA website:
+Information about the US TAF format can be found at NOAA website:
 http://aviationweather.gov/static/help/taf-decode.php
 
 You can get raw and interpreted reports from there too:
@@ -84,15 +89,15 @@ output.
 
     taf = pytaf.TAF("<my TAF string>")
     decoder = pytaf.Decoder(taf)
-    print decoder.decode_taf()
+    print(decoder.decode_taf())
 
 
 Hacking
 -------
 
 If you want to change the decoder output format (e.g. output to HTML),
-inherit from pytaf.Decoder and overload _decode_taf() method.
-That methods contains nothing but calls to other methods and output
+inherit from pytaf.Decoder and overload the _decode_taf() method.
+That method contains nothing but calls to other methods and output
 string formatting.
 
 If you want to redefine the interpretation, e.g. use numeric values
