@@ -261,33 +261,53 @@ class TAF(object):
 
     def _parse_weather_phenomena(self, string):
 
-
-        # XXX: The problem here is that from the intensity (+|-|VC), modifier (MI|BC|...)
-        # and phenomenon (RA|SN|...) either one, two, or three can be present
-        # which makes the detailed regex not specific enough and prone to catching
-        # weird stuff.
-        # So we first search for words that look like weather descriptors,
-        # then analyze them in detail.
-        # If there is a better way, it should be used here instead of this hack.
-
         weather_word_pattern = """
           (?<= \s )
           ( (?: \+|\-|VC|MI|BC|DR|BL|SH|TS|FZ|PR|DZ|RA|SN|SG|IC|PL|GR|GS|UP|BR|FG|FU|DU|SA|HZ|PY|VA|PO|SQ|FC|SS|DS)+ )
           (?= \s|$)
         """
-
-        weather_pattern = """
-            (?P<intensity> \+|\-|VC ){0,1}
-            (?P<modifier> MI|BC|DR|BL|SH|TS|FZ|PR ){0,1}
-            (?P<phenomenon> DZ|RA|SN|SG|IC|PL|GR|GS|UP|BR|FG|FU|DU|SA|HZ|PY|VA|PO|SQ|FC|SS|DS ){0,1}
-        """
         
         weather = []
 
+        intensities = []
+        modifiers = []
+        phenomenons = []
+
+        # Only works for one weather string per group. I've never seen more than one per group anyway.
         weather_words = re.findall(weather_word_pattern, string, re.VERBOSE)
         for word in weather_words:
-            parsed_word = re.search(weather_pattern, word, re.VERBOSE)
-            weather.append(parsed_word.groupdict())
+            matched = True
+            while matched == True:
+                parsed_intensity = re.match('(\+|\-|VC|RE)', word)
+                if parsed_intensity:
+                    intensities.append(parsed_intensity.group(0))
+                    chars_len = len(intensities[-1])
+                    word = word[chars_len:]
+                else:
+                    matched = False
+
+            matched = True
+            while matched == True:
+                parsed_modifier = re.match('(MI|BC|DR|BL|SH|TS|FZ|PR)', word)
+                if parsed_modifier:
+                    modifiers.append(parsed_modifier.group(0))
+                    chars_len = len(modifiers[-1])
+                    word = word[chars_len:]
+                else:
+                    matched = False
+
+            matched = True
+            while matched == True:
+                parsed_phenomenon = re.match('(DZ|RA|SN|SG|IC|PL|GR|GS|UP|BR|FG|FU|DU|SA|HZ|PY|VA|PO|SQ|FC|SS|DS)', word)
+                if parsed_phenomenon:
+                    phenomenons.append(parsed_phenomenon.group(0))
+                    chars_len = len(phenomenons[-1])
+                    word = word[chars_len:]
+                else:
+                    matched = False
+
+            group_dict = {'intensity' : intensities, 'modifier' : modifiers, 'phenomenon' : phenomenons}
+            weather.append(group_dict)
 
         return(weather)
 
