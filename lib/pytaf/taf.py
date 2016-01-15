@@ -263,19 +263,18 @@ class TAF(object):
 
         weather_word_pattern = """
           (?<= \s )
-          ( (?: \+|\-|VC|MI|BC|DR|BL|SH|TS|FZ|PR|DZ|RA|SN|SG|IC|PL|GR|GS|UP|BR|FG|FU|DU|SA|HZ|PY|VA|PO|SQ|FC|SS|DS)+ )
+          ( (?: \+|\-|VC|RE|MI|BC|DR|BL|SH|TS|FZ|PR|DZ|RA|SN|SG|IC|PL|GR|GS|UP|BR|FG|FU|DU|SA|HZ|PY|VA|PO|SQ|FC|SS|DS)+ )
           (?= \s|$)
         """
         
         weather = []
 
-        intensities = []
-        modifiers = []
-        phenomenons = []
-
         # Only works for one weather string per group. I've never seen more than one per group anyway.
         weather_words = re.findall(weather_word_pattern, string, re.VERBOSE)
         for word in weather_words:
++           intensities = []
++           modifiers = []
++           phenomenons = []
             matched = True
             while matched == True:
                 parsed_intensity = re.match('(\+|\-|VC|RE)', word)

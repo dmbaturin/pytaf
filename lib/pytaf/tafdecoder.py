@@ -215,11 +215,8 @@ class Decoder(object):
         return(result)
 
     def _decode_weather(self, weather):
-        result = ""
-        i_result = ""
-        ii_result = ""
-        list = []
-
+        weather_txt_blocks = []
+        
         # Dicts for translating the abbreviations
         dict_intensities = {
             "-" : "light",
@@ -247,7 +244,7 @@ class Decoder(object):
             "IC" : "ice",
             "PL" : "ice pellets",
             "GR" : "small snow/hail pellets",
-            "UP" : "with unknown precipitation",
+            "UP" : "unknown precipitation",
             "BR" : "mist",
             "FG" : "fog",
             "FU" : "smoke",
@@ -269,62 +266,70 @@ class Decoder(object):
         for group in weather:
             # +FC = Tornado or Watersprout
             if "+" in group["intensity"] and "FC" in group["phenomenon"]:
-                weather_txt = "tornado or watersprout"
-                return(weather_txt)
+            weather_txt_blocks.append("tornado or watersprout")
 
-        # Sort the elements of the weather string
-        intensities_pre = []
-        intensities_post = []
-        if "RE" in group["intensity"]:
-            intensities_pre.append("RE")
-            group["intensity"].remove("RE")
-        for intensity in group["intensity"]:
-            if intensity != "VC":
-                intensities_pre.append(intensity)
-            else:
-                intensities_post.append(intensity)
-        modifiers_pre = []
-        modifiers_post = []
-        for modifier in group["modifier"]:
-            if modifier != "TS" and modifier != "SH":
-                modifiers_pre.append(modifier)
-            else:
-                modifiers_post.append(modifier)
+            # Sort the elements of the weather string
+            intensities_pre = []
+            intensities_post = []
+            if "RE" in group["intensity"]:
+                intensities_pre.append("RE")
+                group["intensity"].remove("RE")
+            for intensity in group["intensity"]:
+                if intensity != "VC":
+                    intensities_pre.append(intensity)
+                else:
+                    intensities_post.append(intensity)
 
-        phenomenons_pre = []
-        phenomenons_post = []
-        for phenomenon in group["phenomenon"]:
-            if phenomenon != "UP":
-                phenomenons_pre.append(phenomenon)
-            else:
-                phenomenons_post.append(phenomenon)
+            modifiers_pre = []
+            modifiers_post = []
+            for modifier in group["modifier"]:
+                if modifier != "TS" and modifier != "SH":
+                    modifiers_pre.append(modifier)
+                else:
+                    modifiers_post.append(modifier)
 
-        # Build the return string
-        weather_txt = ""
-        for intensity in intensities_pre:
-            weather_txt += dict_intensities[intensity] + " "
+            phenomenons_pre = []
+            phenomenons_post = []
+            for phenomenon in group["phenomenon"]:
+                if phenomenon != "UP":
+                    phenomenons_pre.append(phenomenon)
+                else:
+                    phenomenons_post.append(phenomenon)
 
-        for modifier in modifiers_pre:
-            weather_txt += dict_modifiers[modifier] + " "
+            # Build the return string
+            weather_txt = ""
+            for intensity in intensities_pre:
+                weather_txt += dict_intensities[intensity] + " "
+            
+            for modifier in modifiers_pre:
+                weather_txt += dict_modifiers[modifier] + " "
+            
+            phenomenons = phenomenons_pre + phenomenons_post
+            cnt = len(phenomenons)
+            for phenomenon in phenomenons:
+                weather_txt += dict_phenomenons[phenomenon]
+                if cnt > 2:
+                    weather_txt += ", "
+                if cnt == 2:
+                    weather_txt += " and "
+                cnt = cnt-1
+            weather_txt += " "
+            
+            for modifier in modifiers_post:
+                weather_txt += dict_modifiers[modifier] + " "
 
-        phenomenons = phenomenons_pre + phenomenons_post
-        cnt = len(phenomenons)
-        for phenomenon in phenomenons:
-            weather_txt += dict_phenomenons[phenomenon]
-            if cnt > 2:
-                weather_txt += ", "
-            if cnt == 2:
-                weather_txt += " and "
-            cnt = cnt-1
-        weather_txt += " "
+            for intensity in intensities_post:
+                weather_txt += dict_intensities[intensity] + " "
 
-        for modifier in modifiers_post:
-            weather_txt += dict_modifiers[modifier] + " "
+            weather_txt_blocks.append(weather_txt.strip())
 
-        for intensity in intensities_post:
-            weather_txt += dict_intensities[intensity] + " "
+        weather_txt_full = ""
+        for block in weather_txt_blocks[:-1]:
+            weather_txt_full += block + " / "
+        weather_txt_full += weather_txt_blocks[-1]
 
-        return(weather_txt)
+        return(weather_txt_full)
+
 
     def _decode_windshear(self, windshear):
         result = "at %s, wind %s at %s %s" % ((int(windshear["altitude"])*100), windshear["direction"], windshear["speed"], windshear["unit"])
