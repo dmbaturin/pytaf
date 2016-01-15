@@ -269,42 +269,36 @@ class TAF(object):
         
         weather = []
 
-        # Only works for one weather string per group. I've never seen more than one per group anyway.
+        # At first, find all weather strings in the TAF group.
         weather_words = re.findall(weather_word_pattern, string, re.VERBOSE)
         for word in weather_words:
-+           intensities = []
-+           modifiers = []
-+           phenomenons = []
-            matched = True
-            while matched == True:
+            intensities = []
+            modifiers = []
+            phenomenons = []
+
+            # Find all intensity descriptors...            
+            while re.match('(\+|\-|VC|RE)', word):
                 parsed_intensity = re.match('(\+|\-|VC|RE)', word)
-                if parsed_intensity:
-                    intensities.append(parsed_intensity.group(0))
-                    chars_len = len(intensities[-1])
-                    word = word[chars_len:]
-                else:
-                    matched = False
+                intensities.append(parsed_intensity.group(0))
+                chars_len = len(intensities[-1])
+                word = word[chars_len:]
 
-            matched = True
-            while matched == True:
+            # Find all modifiers...
+            while re.match('(MI|BC|DR|BL|SH|TS|FZ|PR)', word):
                 parsed_modifier = re.match('(MI|BC|DR|BL|SH|TS|FZ|PR)', word)
-                if parsed_modifier:
-                    modifiers.append(parsed_modifier.group(0))
-                    chars_len = len(modifiers[-1])
-                    word = word[chars_len:]
-                else:
-                    matched = False
+                modifiers.append(parsed_modifier.group(0))
+                chars_len = len(modifiers[-1])
+                word = word[chars_len:]
 
-            matched = True
-            while matched == True:
+            # Find all phenomenon descriptors...
+            while re.match('(DZ|RA|SN|SG|IC|PL|GR|GS|UP|BR|FG|FU|DU|SA|HZ|PY|VA|PO|SQ|FC|SS|DS)', word):
                 parsed_phenomenon = re.match('(DZ|RA|SN|SG|IC|PL|GR|GS|UP|BR|FG|FU|DU|SA|HZ|PY|VA|PO|SQ|FC|SS|DS)', word)
-                if parsed_phenomenon:
-                    phenomenons.append(parsed_phenomenon.group(0))
-                    chars_len = len(phenomenons[-1])
-                    word = word[chars_len:]
-                else:
-                    matched = False
+                phenomenons.append(parsed_phenomenon.group(0))
+                chars_len = len(phenomenons[-1])
+                word = word[chars_len:]
 
+            # ...and put all three lists in a dictionary.
+            # There's a dictionary for each weather string found in a TAF group.
             group_dict = {'intensity' : intensities, 'modifier' : modifiers, 'phenomenon' : phenomenons}
             weather.append(group_dict)
 

@@ -215,8 +215,6 @@ class Decoder(object):
         return(result)
 
     def _decode_weather(self, weather):
-        weather_txt_blocks = []
-        
         # Dicts for translating the abbreviations
         dict_intensities = {
             "-" : "light",
@@ -259,6 +257,8 @@ class Decoder(object):
             "SS" : "sand storm",
             "DS" : "dust storm",
         }
+        
+        weather_txt_blocks = []
 
         # Check for special cases first. If a certain combination is found
         # skip parsing the whole weather string and return a defined string
@@ -266,9 +266,11 @@ class Decoder(object):
         for group in weather:
             # +FC = Tornado or Watersprout
             if "+" in group["intensity"] and "FC" in group["phenomenon"]:
-            weather_txt_blocks.append("tornado or watersprout")
+                weather_txt_blocks.append("tornado or watersprout")
+                continue
 
-            # Sort the elements of the weather string
+            # Sort the elements of the weather string, if no special combi-
+            # nation is found.
             intensities_pre = []
             intensities_post = []
             if "RE" in group["intensity"]:
@@ -296,7 +298,9 @@ class Decoder(object):
                 else:
                     phenomenons_post.append(phenomenon)
 
-            # Build the return string
+            # Build the human readable text from the single weather string
+            # and append it to a list containing all the interpreted text
+            # blocks from a TAF group
             weather_txt = ""
             for intensity in intensities_pre:
                 weather_txt += dict_intensities[intensity] + " "
@@ -323,6 +327,8 @@ class Decoder(object):
 
             weather_txt_blocks.append(weather_txt.strip())
 
+        # Put all the human readable stuff together and return the final
+        # output as a string.
         weather_txt_full = ""
         for block in weather_txt_blocks[:-1]:
             weather_txt_full += block + " / "
