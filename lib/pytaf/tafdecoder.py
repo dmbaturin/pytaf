@@ -215,119 +215,127 @@ class Decoder(object):
         return(result)
 
     def _decode_weather(self, weather):
-        result = ""
-        i_result = ""
-        ii_result = ""
-        list = []
+        # Dicts for translating the abbreviations
+        dict_intensities = {
+            "-" : "light",
+            "+" : "heavy",
+            "VC" : "in the vicinity",
+            "RE" : "recent"
+        }
 
+        dict_modifiers = {
+            "MI" : "shallow",
+            "BC" : "patchy",
+            "DR" : "low drifting",
+            "BL" : "blowing",
+            "SH" : "showers",
+            "TS" : "thunderstorms",
+            "FZ" : "freezing",
+            "PR" : "partial"
+        }
+
+        dict_phenomenons = {
+            "DZ" : "drizzle",
+            "RA" : "rain",
+            "SN" : "snow",
+            "SG" : "snow grains",
+            "IC" : "ice",
+            "PL" : "ice pellets",
+            "GR" : "small snow/hail pellets",
+            "UP" : "unknown precipitation",
+            "BR" : "mist",
+            "FG" : "fog",
+            "FU" : "smoke",
+            "DU" : "dust",
+            "SA" : "sand",
+            "HZ" : "haze",
+            "PY" : "spray",
+            "VA" : "volcanic ash",
+            "PO" : "dust/sand whirl",
+            "SQ" : "squall",
+            "FC" : "funnel cloud",
+            "SS" : "sand storm",
+            "DS" : "dust storm",
+        }
+        
+        weather_txt_blocks = []
+
+        # Check for special cases first. If a certain combination is found
+        # skip parsing the whole weather string and return a defined string
+        # immidiately
         for group in weather:
-            # Special cases
-            if group["intensity"] == "+" and group["phenomenon"] == "FC":
-                i_result += "tornado or watersprout"
-                list.append(i_result)
+            # +FC = Tornado or Watersprout
+            if "+" in group["intensity"] and "FC" in group["phenomenon"]:
+                weather_txt_blocks.append("tornado or watersprout")
                 continue
 
-            if group["modifier"] == "MI":
-                ii_result += "shallow "
-            elif group["modifier"] == "BC":
-                ii_result += "patchy "
-            elif group["modifier"] == "DR":
-                ii_result += "low drifting "
-            elif group["modifier"] == "BL":
-                ii_result += "blowing "
-            elif group["modifier"] == "SH":
-                ii_result += "showers "
-            elif group["modifier"] == "TS":
-                ii_result += "thunderstorms "
-            elif group["modifier"] == "FZ":
-                ii_result += "freezing "
-            elif group["modifier"] == "PR":
-                ii_result = "partial "
+            # Sort the elements of the weather string, if no special combi-
+            # nation is found.
+            intensities_pre = []
+            intensities_post = []
+            if "RE" in group["intensity"]:
+                intensities_pre.append("RE")
+                group["intensity"].remove("RE")
+            for intensity in group["intensity"]:
+                if intensity != "VC":
+                    intensities_pre.append(intensity)
+                else:
+                    intensities_post.append(intensity)
 
-            if group["phenomenon"] == "DZ":
-                ii_result += "drizzle"
-            if group["phenomenon"] == "RA":
-                ii_result += "rain"
-            if group["phenomenon"] == "SN":
-                ii_result += "snow"
-            if group["phenomenon"] == "SG":
-                ii_result += "snow grains"
-            if group["phenomenon"] == "IC":
-                ii_result += "ice"
-            if group["phenomenon"] == "PL":
-                ii_result += "ice pellets"
-            if group["phenomenon"] == "GR":
-                ii_result += "hail"
-            if group["phenomenon"] == "GS":
-                ii_result += "small snow/hail pellets"
-            if group["phenomenon"] == "UP":
-                ii_result += "unknown precipitation"
-            if group["phenomenon"] == "BR":
-                ii_result += "mist"
-            if group["phenomenon"] == "FG":
-                ii_result += "fog"
-            if group["phenomenon"] == "FU":
-                ii_result += "smoke"
-            if group["phenomenon"] == "DU":
-                ii_result += "dust"
-            if group["phenomenon"] == "SA":
-                ii_result += "sand"
-            if group["phenomenon"] == "HZ":
-                ii_result += "haze"
-            if group["phenomenon"] == "PY":
-                ii_result += "spray"
-            if group["phenomenon"] == "VA":
-                ii_result += "volcanic ash"
-            if group["phenomenon"] == "PO":
-                ii_result += "dust/sand whirl"
-            if group["phenomenon"] == "SQ":
-                ii_result += "squall"
-            if group["phenomenon"] == "FC":
-                ii_result += "funnel cloud"
-            if group["phenomenon"] == "SS":
-                ii_result += "sand storm"
-            if group["phenomenon"] == "DS":
-                ii_result += "dust storm"
+            modifiers_pre = []
+            modifiers_post = []
+            for modifier in group["modifier"]:
+                if modifier != "TS" and modifier != "SH":
+                    modifiers_pre.append(modifier)
+                else:
+                    modifiers_post.append(modifier)
 
-            # Fix the most ugly grammar
-            if group["modifier"] == "SH" and group["phenomenon"] == "RA":
-                ii_result = "showers"
-            if group["modifier"] == "SH" and group["phenomenon"] == "SN":
-                ii_result = "snow showers"
-            if group["modifier"] == "SH" and group["phenomenon"] == "SG":
-                ii_result = "snow grain showers"
-            if group["modifier"] == "SH" and group["phenomenon"] == "PL":
-                ii_result = "ice pellet showers"
-            if group["modifier"] == "SH" and group["phenomenon"] == "IC":
-                ii_result = "ice showers"
-            if group["modifier"] == "SH" and group["phenomenon"] == "GS":
-                ii_result = "snow pellet showers"
-            if group["modifier"] == "SH" and group["phenomenon"] == "GR":
-                ii_result = "hail showers"
+            phenomenons_pre = []
+            phenomenons_post = []
+            for phenomenon in group["phenomenon"]:
+                if phenomenon != "UP":
+                    phenomenons_pre.append(phenomenon)
+                else:
+                    phenomenons_post.append(phenomenon)
 
-            if group["modifier"] == "TS" and group["phenomenon"] == "RA":
-                ii_result = "thunderstorms and rain"
-            if group["modifier"] == "TS" and group["phenomenon"] == "UP":
-                ii_result = "thunderstorms with unknown precipitation"
+            # Build the human readable text from the single weather string
+            # and append it to a list containing all the interpreted text
+            # blocks from a TAF group
+            weather_txt = ""
+            for intensity in intensities_pre:
+                weather_txt += dict_intensities[intensity] + " "
+            
+            for modifier in modifiers_pre:
+                weather_txt += dict_modifiers[modifier] + " "
+            
+            phenomenons = phenomenons_pre + phenomenons_post
+            cnt = len(phenomenons)
+            for phenomenon in phenomenons:
+                weather_txt += dict_phenomenons[phenomenon]
+                if cnt > 2:
+                    weather_txt += ", "
+                if cnt == 2:
+                    weather_txt += " and "
+                cnt = cnt-1
+            weather_txt += " "
+            
+            for modifier in modifiers_post:
+                weather_txt += dict_modifiers[modifier] + " "
 
-            if group["intensity"] == "+":
-                i_result = "heavy %s" % ii_result
-            elif group["intensity"] == "-":
-                i_result = "light %s" % ii_result
-            elif group["intensity"] == "VC":
-                i_result = "%s in the vicinity" % ii_result
-            else:
-                i_result = ii_result
+            for intensity in intensities_post:
+                weather_txt += dict_intensities[intensity] + " "
 
-            list.append(i_result)
-            i_result = ""
-            ii_result = ""
+            weather_txt_blocks.append(weather_txt.strip())
 
-        result = ", ".join(list)
+        # Put all the human readable stuff together and return the final
+        # output as a string.
+        weather_txt_full = ""
+        for block in weather_txt_blocks[:-1]:
+            weather_txt_full += block + " / "
+        weather_txt_full += weather_txt_blocks[-1]
 
-        # Remove extra whitespace, if any
-        result = re.sub(r'\s+', ' ', result)
-        return(result)
+        return(weather_txt_full)
+
 
     def _decode_windshear(self, windshear):
         result = "at %s, wind %s at %s %s" % ((int(windshear["altitude"])*100), windshear["direction"], windshear["speed"], windshear["unit"])
