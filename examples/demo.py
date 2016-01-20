@@ -13,13 +13,16 @@ TAF AMD KDEN 291134Z 2912/3018 32006KT 1/4SM FG OVC001
      FM300500 23006KT P6SM SCT120 $
 """
 
+# Create a parsed TAF object from string
 t = pytaf.TAF(taf_str)
 
+# Create a decoder object from the TAF object
 d = pytaf.Decoder(t)
 
-print taf_str
-print
-dec = d.decode_taf()
+# Print the raw string for the reference
+print(taf_str)
 
-print dec
+# Decode and print the decoded string
+dec = d.decode_taf()
+print(dec)
 
