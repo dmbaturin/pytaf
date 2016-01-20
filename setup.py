@@ -11,7 +11,6 @@ setup(name='pytaf',
       package_dir={'': 'lib'},
       packages=['pytaf'],
       zip_safe=True,
-      download_url = "https://github.com/dmbaturin/pytaf/archive/pypi/1.1.1.zip",
       classifiers = [
                         "Development Status :: 5 - Production/Stable",
                         "License :: OSI Approved :: MIT License",
