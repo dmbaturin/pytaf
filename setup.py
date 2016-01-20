@@ -2,7 +2,7 @@ from setuptools import setup
 
 
 setup(name='pytaf',
-      version='1.0.0',
+      version='1.1.0',
       description='TAF (Terminal Aerodrome Forecast) parser and decoder',
       url='http://github.com/dmbaturin/pytaf',
       author='Daniil Baturin',
@@ -15,6 +15,11 @@ setup(name='pytaf',
                         "Development Status :: 5 - Production/Stable",
                         "License :: OSI Approved :: MIT License",
                         "Operating System :: OS Independent",
-                    ]
+                        "Programming Language :: Python :: 2.6",
+                        "Programming Language :: Python :: 2.7",
+                        "Programming Language :: Python :: 3",
+                        "Topic :: Aviation"
+                    ],
+      keywords="aviation weather meteorology taf"
 )
 
