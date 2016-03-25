@@ -13,19 +13,44 @@ class Decoder(object):
             raise DecodeError("Argument is not a TAF parser object")
 
     def decode_taf(self):
+        form = self._taf.get_header()["form"]
         result = ""
 
         result += self._decode_header(self._taf.get_header()) + "\n"
 
-        for group in self._taf.get_groups():
-            if group["header"]:
-                result += self._decode_group_header(group["header"]) + "\n"
+        if form == "taf":
+            for group in self._taf.get_groups():
+                if group["header"]:
+                    result += self._decode_group_header(group["header"]) + "\n"
+
+                if group["wind"]:
+                    result += "    Wind: %s \n" % self._decode_wind(group["wind"])
+
+                if group["visibility"]:
+                    result += "    Visibility: %s \n" % self._decode_visibility(group["visibility"])
+
+                if group["clouds"]:
+                    result += "    Sky conditions: %s \n" % self._decode_clouds(group["clouds"])
+
+                if group["weather"]:
+                    result += "    Weather: %s \n" % self._decode_weather(group["weather"])
+
+                if group["windshear"]:
+                    result += "    Windshear: %s\n" % self._decode_windshear(group["windshear"])
+        else:
+            group = self._taf.get_groups()
 
             if group["wind"]:
                 result += "    Wind: %s \n" % self._decode_wind(group["wind"])
 
             if group["visibility"]:
                 result += "    Visibility: %s \n" % self._decode_visibility(group["visibility"])
+
+            if group["temperature"]:
+                result += "    Temperature: %s\n" % self._decode_temperature(group["temperature"])
+            
+            if group["pressure"]:
+                result += "    Pressure: %s\n" % self._decode_pressure(group["pressure"])
 
             if group["clouds"]:
                 result += "    Sky conditions: %s \n" % self._decode_clouds(group["clouds"])
@@ -35,8 +60,8 @@ class Decoder(object):
 
             if group["windshear"]:
                 result += "    Windshear: %s\n" % self._decode_windshear(group["windshear"])
-
-            result += " \n"
+            
+        result += " \n"
 
         if self._taf.get_maintenance():
             result += self._decode_maintenance(self._taf.get_maintenance())
@@ -49,23 +74,36 @@ class Decoder(object):
         # Ensure it's side effect free
         _header = header
 
-        # Type
-        if _header["type"] == "AMD":
-            result += "TAF amended for "
-        elif _header["type"] == "COR":
-            result += "TAF corrected for "
-        elif _header["type"] == "RTD":
-           result += "TAF related for "
+        if _header["form"] == 'taf':
+            # Decode TAF header
+            # Type
+            if _header["type"] == "AMD":
+                result += "TAF amended for "
+            elif _header["type"] == "COR":
+                result += "TAF corrected for "
+            elif _header["type"] == "RTD":
+               result += "TAF related for "
+            else:
+                result += "TAF for "
+
+            # Add ordinal suffix
+            _header["origin_date"] = _header["origin_date"] + self._get_ordinal_suffix(_header["origin_date"])
+            _header["valid_from_date"] = _header["valid_from_date"] + self._get_ordinal_suffix(_header["valid_from_date"]) 
+            _header["valid_till_date" ] = _header["valid_till_date"] + self._get_ordinal_suffix(_header["valid_till_date"])
+
+            result += ("%(icao_code)s issued %(origin_hours)s:%(origin_minutes)s UTC on the %(origin_date)s, " 
+                       "valid from %(valid_from_hours)s:00 UTC on the %(valid_from_date)s to %(valid_till_hours)s:00 UTC on the %(valid_till_date)s")
         else:
-            result += "TAF for "
+            # Decode METAR header
+            # Type
+            if _header["type"] == "COR":
+                result += "METAR corrected for "
+            else:
+                result += "METAR for "
+            
+            _header["origin_date"] = _header["origin_date"] + self._get_ordinal_suffix(_header["origin_date"])
 
-        # Add ordinal suffix
-        _header["origin_date"] = _header["origin_date"] + self._get_ordinal_suffix(_header["origin_date"])
-        _header["valid_from_date"] = _header["valid_from_date"] + self._get_ordinal_suffix(_header["valid_from_date"]) 
-        _header["valid_till_date" ] = _header["valid_till_date"] + self._get_ordinal_suffix(_header["valid_till_date"])
-
-        result += ("%(icao_code)s issued %(origin_hours)s:%(origin_minutes)s UTC on the %(origin_date)s, " 
-                   "valid from %(valid_from_hours)s:00 UTC on the %(valid_from_date)s to %(valid_till_hours)s:00 UTC on the %(valid_till_date)s")
+            result += ("%(icao_code)s issued %(origin_hours)s:%(origin_minutes)s UTC on the %(origin_date)s")
 
         result = result % _header
 
@@ -335,7 +373,27 @@ class Decoder(object):
         weather_txt_full += weather_txt_blocks[-1]
 
         return(weather_txt_full)
-
+    
+    def _decode_temperature(self, temperature):
+        if temperature["air_prefix"] == 'M':
+            air_c = int(temperature["air"])*-1
+        else:
+            air_c = int(temperature["air"])
+            
+        if temperature["dewpoint_prefix"] == 'M':
+            dew_c = int(temperature["dewpoint"])*-1
+        else:
+            dew_c = int(temperature["dewpoint"])
+        
+        air_f = int(round(air_c*1.8+32))
+        dew_f = int(round(dew_c*1.8+32))
+        
+        result = "air at %s°C/%s°F, dewpoint at %s°C/%s°F" % (air_c, air_f, dew_c, dew_f)
+        return(result)
+    
+    def _decode_pressure(self, pressure):
+        result = "%s hPa" % (pressure["athm_pressure"])
+        return(result)
 
     def _decode_windshear(self, windshear):
         result = "at %s, wind %s at %s %s" % ((int(windshear["altitude"])*100), windshear["direction"], windshear["speed"], windshear["unit"])

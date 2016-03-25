@@ -40,7 +40,7 @@ class TAF(object):
         if self._taf_header['form'] == 'metar':
             self._weather_groups = self._parse_metar(self._raw_taf)
         else:
-            # Get weather groups
+            # Get all TAF weather groups
             self._raw_weather_groups = self._init_groups(self._raw_taf)
 
             for group in self._raw_weather_groups:
@@ -80,7 +80,7 @@ class TAF(object):
             \s*
             (?P<valid_from_date> \d{0,2})
             (?P<valid_from_hours> \d{0,2})
-            /*
+            /
             (?P<valid_till_date> \d{0,2})
             (?P<valid_till_hours> \d{0,2})
         """
@@ -96,6 +96,8 @@ class TAF(object):
             (?P<origin_hours> \d{0,2}) # at some aerodromes does not appear
             (?P<origin_minutes> \d{0,2}) # at some aerodromes does not appear
             Z? # Zulu time (UTC, that is) # at some aerodromes does not appear
+            \s+
+            (?P<type> (COR){0,1}) # Corrected
         """
         
         header_taf = re.match(taf_header_pattern, string, re.VERBOSE)
@@ -111,7 +113,7 @@ class TAF(object):
             header_dict = header_metar.groupdict()
             header_dict['form'] = 'metar'
         else:
-            raise MalformedTAF("No valid TAF header found")
+            raise MalformedTAF("No valid TAF/METAR header found")
         
         return header_dict
 
@@ -375,12 +377,16 @@ class TAF(object):
             return(None)
 
       # METAR specific functions
+      # TODO: Condition of runway
+      # TODO: Parse North American METAR codes
     def _parse_temperature(self, string):
         temperature_pattern = """
             (?<= \s )
-            (?P<temperature> M?\d{2})
+            (?P<air_prefix> M?)
+            (?P<air> \d{2})
             /
-            (?P<dewpoint> M?\d{2})
+            (?P<dewpoint_prefix> M?)
+            (?P<dewpoint> \d{2})
             (?= \s|$)
         """
 
@@ -392,10 +398,11 @@ class TAF(object):
             return(None)
 
     def _parse_pressure(self, string):
+        # FIXME: Any other possible values than 'Q' as altimeter setting?
         pressure_pattern = """
             (?<= \s )
-            Q
-            (?P<pressure> \d{4})
+            (?P<altimeter_setting> Q)
+            (?P<athm_pressure> \d{4})
             (?= \s|$)
         """
 
