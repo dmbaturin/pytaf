@@ -38,7 +38,7 @@ class TAF(object):
         self._taf_header = self._init_header(self._raw_taf)
         
         if self._taf_header['form'] == 'metar':
-            self._weather_groups = self._parse_metar(self._raw_taf)
+            self._weather_groups.append(self._parse_metar(self._raw_taf))
         else:
             # Get all TAF weather groups
             self._raw_weather_groups = self._init_groups(self._raw_taf)
@@ -65,7 +65,7 @@ class TAF(object):
         taf_header_pattern = """
             ^
             (TAF)?    # TAF header (at times missing or duplicate)
-            \s+
+            \s*
             (?P<type> (COR|AMD|RTD)){0,1} # Corrected/Amended/Delayed
              
             \s* # There may or may not be space as COR/AMD/RTD is optional
@@ -97,7 +97,7 @@ class TAF(object):
             (?P<origin_minutes> \d{0,2}) # at some aerodromes does not appear
             Z? # Zulu time (UTC, that is) # at some aerodromes does not appear
             \s+
-            (?P<type> (COR){0,1}) # Corrected
+            (?P<type> (COR){0,1}) # Corrected # TODO: Any other values possible?
         """
         
         header_taf = re.match(taf_header_pattern, string, re.VERBOSE)
@@ -376,9 +376,9 @@ class TAF(object):
         else:
             return(None)
 
-      # METAR specific functions
-      # TODO: Condition of runway
-      # TODO: Parse North American METAR codes
+    # METAR specific functions
+    # TODO: Condition of runway(s)
+    # TODO: Parse North American METAR codes
     def _parse_temperature(self, string):
         temperature_pattern = """
             (?<= \s )
@@ -414,6 +414,7 @@ class TAF(object):
             return(None)
 
     # TODO: Calculate relative/absolute humidity
+    # Nice-to-have - Not present in a METAR/TAF string, but it can be calculated by air temperature and dewpoint
 
     # Getters
     def get_taf(self):

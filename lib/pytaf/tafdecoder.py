@@ -18,39 +18,26 @@ class Decoder(object):
 
         result += self._decode_header(self._taf.get_header()) + "\n"
 
-        if form == "taf":
-            for group in self._taf.get_groups():
+        for group in self._taf.get_groups():
+            # TAF specific stuff
+            if form == "taf":
                 if group["header"]:
                     result += self._decode_group_header(group["header"]) + "\n"
 
-                if group["wind"]:
-                    result += "    Wind: %s \n" % self._decode_wind(group["wind"])
-
-                if group["visibility"]:
-                    result += "    Visibility: %s \n" % self._decode_visibility(group["visibility"])
-
-                if group["clouds"]:
-                    result += "    Sky conditions: %s \n" % self._decode_clouds(group["clouds"])
-
-                if group["weather"]:
-                    result += "    Weather: %s \n" % self._decode_weather(group["weather"])
-
-                if group["windshear"]:
-                    result += "    Windshear: %s\n" % self._decode_windshear(group["windshear"])
-        else:
-            group = self._taf.get_groups()
-
+            # METAR specific stuff
+            if form == "metar":
+                if group["temperature"]:
+                    result += "    Temperature: %s\n" % self._decode_temperature(group["temperature"])
+            
+                if group["pressure"]:
+                    result += "    Pressure: %s\n" % self._decode_pressure(group["pressure"])
+            
+            # Both TAF and METAR                    
             if group["wind"]:
                 result += "    Wind: %s \n" % self._decode_wind(group["wind"])
 
             if group["visibility"]:
                 result += "    Visibility: %s \n" % self._decode_visibility(group["visibility"])
-
-            if group["temperature"]:
-                result += "    Temperature: %s\n" % self._decode_temperature(group["temperature"])
-            
-            if group["pressure"]:
-                result += "    Pressure: %s\n" % self._decode_pressure(group["pressure"])
 
             if group["clouds"]:
                 result += "    Sky conditions: %s \n" % self._decode_clouds(group["clouds"])
@@ -60,8 +47,8 @@ class Decoder(object):
 
             if group["windshear"]:
                 result += "    Windshear: %s\n" % self._decode_windshear(group["windshear"])
-            
-        result += " \n"
+           
+            result += " \n"
 
         if self._taf.get_maintenance():
             result += self._decode_maintenance(self._taf.get_maintenance())
@@ -374,7 +361,7 @@ class Decoder(object):
 
         return(weather_txt_full)
     
-    def _decode_temperature(self, temperature):
+    def _decode_temperature(self, temperature, unit='C'):
         if temperature["air_prefix"] == 'M':
             air_c = int(temperature["air"])*-1
         else:
@@ -385,10 +372,17 @@ class Decoder(object):
         else:
             dew_c = int(temperature["dewpoint"])
         
-        air_f = int(round(air_c*1.8+32))
-        dew_f = int(round(dew_c*1.8+32))
+        if unit == 'C':
+            air_txt = air_c
+            dew_txt = dew_c
         
-        result = "air at %s°C/%s°F, dewpoint at %s°C/%s°F" % (air_c, air_f, dew_c, dew_f)
+        if unit == 'F':
+            air_f = int(round(air_c*1.8+32))
+            dew_f = int(round(dew_c*1.8+32))
+            air_txt = air_f
+            dew_txt = dew_f
+        
+        result = "air at %s°%s, dewpoint at %s°%s" % (air_txt, unit, dew_txt, unit)
         return(result)
     
     def _decode_pressure(self, pressure):
