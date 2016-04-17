@@ -28,7 +28,7 @@ class TAF(object):
         if isinstance(string, str) and string != "":
             self._raw_taf = string
         else:
-            raise MalformedTAF("TAF string expected")
+            raise MalformedTAF("TAF/METAR string expected")
 
         # Patterns use ^ and $, so we don't want
         # leading/trailing spaces
@@ -38,7 +38,7 @@ class TAF(object):
         self._taf_header = self._init_header(self._raw_taf)
         
         if self._taf_header['form'] == 'metar':
-            self._weather_groups.append(self._parse_metar(self._raw_taf))
+            self._weather_groups.append(self._parse_group(self._raw_taf))
         else:
             # Get all TAF weather groups
             self._raw_weather_groups = self._init_groups(self._raw_taf)
@@ -146,8 +146,14 @@ class TAF(object):
 
     def _parse_group(self, string):
         group = {}
+        
+        if self._taf_header['form'] == "taf":
+            group["header"] = self._parse_group_header(string)
+        
+        if self._taf_header['form'] == "metar":
+            group["temperature"] = self._parse_temperature(string)
+            group["pressure"] = self._parse_pressure(string)
 
-        group["header"] = self._parse_group_header(string)
         group["wind"] = self._parse_wind(string)
         group["visibility"] = self._parse_visibility(string)
         group["clouds"] = self._parse_clouds(string)
@@ -156,21 +162,6 @@ class TAF(object):
         group["windshear"] = self._parse_wind_shear(string)
 
         return(group)
-    
-    def _parse_metar(self, string):
-        group = {}
-        
-        group["wind"] = self._parse_wind(string)
-        group["visibility"] = self._parse_visibility(string)
-        group["clouds"] = self._parse_clouds(string)
-        group["vertical_visibility"] = self._parse_vertical_visibility(string)
-        group["weather"] = self._parse_weather_phenomena(string)
-        group["windshear"] = self._parse_wind_shear(string)
-        group["temperature"] = self._parse_temperature(string)
-        group["pressure"] = self._parse_pressure(string)
-        
-        return(group)
-        
         
          
     def _parse_group_header(self, string):
