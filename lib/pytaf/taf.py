@@ -9,13 +9,13 @@ class TAF(object):
 
     def __init__(self, string):
         """ 
-        Initializes the object with TAF report text.
+        Initializes the object with TAF/METAR report text.
 
         Args:
-            string: TAF report string
+            string: TAF/METAR report string
 
         Raises:
-            MalformedTAF: An error parsing the TAF report
+            MalformedTAF: An error parsing the TAF/METAR report
         """
 
         # Instance variables
@@ -103,9 +103,9 @@ class TAF(object):
         header_taf = re.match(taf_header_pattern, string, re.VERBOSE)
         header_metar = re.match(metar_header_pattern, string, re.VERBOSE)
         
-        # As a METAR and TAF header doesn't differ that much it's likely
-        # to get both regex to match. TAF is a bit more specific so if
-        # both regex match we're most likely dealing with a TAF string.
+        # The difference between a METAR and TAF header isn't that big
+        # so it's likely to get both regex to match. TAF is a bit more specific so if
+        # both regex match then we're most likely dealing with a TAF string.
         if header_taf:
             header_dict = header_taf.groupdict()
             header_dict['form'] = 'taf'
@@ -305,7 +305,7 @@ class TAF(object):
         
         weather = []
 
-        # At first, find all weather strings in the TAF group.
+        # At first, find all weather strings in the TAF weather group or METAR string.
         weather_words = re.findall(weather_word_pattern, string, re.VERBOSE)
         for word in weather_words:
             intensities = []
@@ -334,7 +334,7 @@ class TAF(object):
                 word = word[chars_len:]
 
             # ...and put all three lists in a dictionary.
-            # There's a dictionary for each weather string found in a TAF group.
+            # There's a dictionary for each weather string found in a TAF weather group or METAR string.
             group_dict = {'intensity' : intensities, 'modifier' : modifiers, 'phenomenon' : phenomenons}
             weather.append(group_dict)
 
@@ -369,7 +369,7 @@ class TAF(object):
 
     # METAR specific functions
     # TODO: Condition of runway(s)
-    # TODO: Parse North American METAR codes
+    # TODO: Parse North American METAR codes (RMK)
     def _parse_temperature(self, string):
         temperature_pattern = """
             (?<= \s )

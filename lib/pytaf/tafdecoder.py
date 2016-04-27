@@ -286,8 +286,8 @@ class Decoder(object):
         weather_txt_blocks = []
 
         # Check for special cases first. If a certain combination is found
-        # skip parsing the whole weather string and return a defined string
-        # immidiately
+        # then skip parsing the whole weather string and return a defined string
+        # immediately
         for group in weather:
             # +FC = Tornado or Watersprout
             if "+" in group["intensity"] and "FC" in group["phenomenon"]:
