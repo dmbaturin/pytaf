@@ -9,13 +9,13 @@ class TAF(object):
 
     def __init__(self, string):
         """ 
-        Initializes the object with TAF report text.
+        Initializes the object with TAF/METAR report text.
 
         Args:
-            string: TAF report string
+            string: TAF/METAR report string
 
         Raises:
-            MalformedTAF: An error parsing the TAF report
+            MalformedTAF: An error parsing the TAF/METAR report
         """
 
         # Instance variables
@@ -28,7 +28,7 @@ class TAF(object):
         if isinstance(string, str) and string != "":
             self._raw_taf = string
         else:
-            raise MalformedTAF("TAF string expected")
+            raise MalformedTAF("TAF/METAR string expected")
 
         # Patterns use ^ and $, so we don't want
         # leading/trailing spaces
@@ -36,21 +36,24 @@ class TAF(object):
 
         # Initialize header part
         self._taf_header = self._init_header(self._raw_taf)
+        
+        if self._taf_header['form'] == 'metar':
+            self._weather_groups.append(self._parse_group(self._raw_taf))
+        else:
+            # Get all TAF weather groups
+            self._raw_weather_groups = self._init_groups(self._raw_taf)
 
-        # Get weather groups
-        self._raw_weather_groups = self._init_groups(self._raw_taf)
-
-        for group in self._raw_weather_groups:
-            parsed_group = self._parse_group(group)
-            self._weather_groups.append(parsed_group)
+            for group in self._raw_weather_groups:
+                parsed_group = self._parse_group(group)
+                self._weather_groups.append(parsed_group)
 
         self._maintenance = self._parse_maintenance(self._raw_taf)
 
     def _init_header(self, string):
-        """ Extracts header part from TAF string and populates header dict
+        """ Extracts header part from TAF/METAR string and populates header dict
 
         Args:
-            TAF report string
+            TAF/METAR report string
 
         Raises:
             MalformedTAF: An error parsing the report
@@ -61,8 +64,8 @@ class TAF(object):
 
         taf_header_pattern = """
             ^
-            TAF*    # TAF header (at times missing or duplicate)
-            \s+
+            (TAF)?    # TAF header (at times missing or duplicate)
+            \s*
             (?P<type> (COR|AMD|RTD)){0,1} # Corrected/Amended/Delayed
              
             \s* # There may or may not be space as COR/AMD/RTD is optional
@@ -77,17 +80,43 @@ class TAF(object):
             \s*
             (?P<valid_from_date> \d{0,2})
             (?P<valid_from_hours> \d{0,2})
-            /*
+            /
             (?P<valid_till_date> \d{0,2})
             (?P<valid_till_hours> \d{0,2})
         """
 
-        header = re.match(taf_header_pattern, string, re.VERBOSE)
+        metar_header_pattern = """
+            ^
+            (METAR)?    # METAR header (at times missing or duplicate)
+            \s*
+            (?P<icao_code> [A-Z]{4}) # Station ICAO code
+            
+            \s* # at some aerodromes does not appear
+            (?P<origin_date> \d{0,2}) # at some aerodromes does not appear
+            (?P<origin_hours> \d{0,2}) # at some aerodromes does not appear
+            (?P<origin_minutes> \d{0,2}) # at some aerodromes does not appear
+            Z? # Zulu time (UTC, that is) # at some aerodromes does not appear
+            \s+
+            (?P<type> (COR){0,1}) # Corrected # TODO: Any other values possible?
+        """
         
-        if header:
-            return header.groupdict()
+        header_taf = re.match(taf_header_pattern, string, re.VERBOSE)
+        header_metar = re.match(metar_header_pattern, string, re.VERBOSE)
+        
+        # The difference between a METAR and TAF header isn't that big
+        # so it's likely to get both regex to match. TAF is a bit more specific so if
+        # both regex match then we're most likely dealing with a TAF string.
+        if header_taf:
+            header_dict = header_taf.groupdict()
+            header_dict['form'] = 'taf'
+        elif header_metar:
+            header_dict = header_metar.groupdict()
+            header_dict['form'] = 'metar'
         else:
-            raise MalformedTAF("No valid TAF header found")
+            raise MalformedTAF("No valid TAF/METAR header found")
+        
+        return header_dict
+
 
     def _init_groups(self, string):
         """ Extracts weather groups (FM, PROB etc.) and populates group list
@@ -117,8 +146,14 @@ class TAF(object):
 
     def _parse_group(self, string):
         group = {}
+        
+        if self._taf_header['form'] == "taf":
+            group["header"] = self._parse_group_header(string)
+        
+        if self._taf_header['form'] == "metar":
+            group["temperature"] = self._parse_temperature(string)
+            group["pressure"] = self._parse_pressure(string)
 
-        group["header"] = self._parse_group_header(string)
         group["wind"] = self._parse_wind(string)
         group["visibility"] = self._parse_visibility(string)
         group["clouds"] = self._parse_clouds(string)
@@ -127,6 +162,7 @@ class TAF(object):
         group["windshear"] = self._parse_wind_shear(string)
 
         return(group)
+        
          
     def _parse_group_header(self, string):
         # From header pattern
@@ -269,7 +305,7 @@ class TAF(object):
         
         weather = []
 
-        # At first, find all weather strings in the TAF group.
+        # At first, find all weather strings in the TAF weather group or METAR string.
         weather_words = re.findall(weather_word_pattern, string, re.VERBOSE)
         for word in weather_words:
             intensities = []
@@ -298,7 +334,7 @@ class TAF(object):
                 word = word[chars_len:]
 
             # ...and put all three lists in a dictionary.
-            # There's a dictionary for each weather string found in a TAF group.
+            # There's a dictionary for each weather string found in a TAF weather group or METAR string.
             group_dict = {'intensity' : intensities, 'modifier' : modifiers, 'phenomenon' : phenomenons}
             weather.append(group_dict)
 
@@ -330,7 +366,48 @@ class TAF(object):
             return(maintenance.group(0))
         else:
             return(None)
-            
+
+    # METAR specific functions
+    # TODO: Condition of runway(s)
+    # TODO: Parse North American METAR codes (RMK)
+    def _parse_temperature(self, string):
+        temperature_pattern = """
+            (?<= \s )
+            (?P<air_prefix> M?)
+            (?P<air> \d{2})
+            /
+            (?P<dewpoint_prefix> M?)
+            (?P<dewpoint> \d{2})
+            (?= \s|$)
+        """
+
+        temperature = re.search(temperature_pattern, string, re.VERBOSE)
+
+        if temperature:
+            return(temperature.groupdict())
+        else:
+            return(None)
+
+    def _parse_pressure(self, string):
+        # FIXME: Any other possible values than 'Q' as altimeter setting?
+        pressure_pattern = """
+            (?<= \s )
+            (?P<altimeter_setting> Q)
+            (?P<athm_pressure> \d{4})
+            (?= \s|$)
+        """
+
+        pressure = re.search(pressure_pattern, string, re.VERBOSE)
+
+        if pressure:
+            return(pressure.groupdict())
+        else:
+            return(None)
+
+    # TODO: Calculate relative/absolute humidity
+    # Nice-to-have - Not present in a METAR/TAF string, but it can be calculated by air temperature and dewpoint
+
+    # Getters
     def get_taf(self):
         """ Return raw TAF string the object was initialized with """
         return self.__raw_taf
