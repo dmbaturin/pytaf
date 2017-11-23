@@ -410,7 +410,7 @@ class TAF(object):
     # Getters
     def get_taf(self):
         """ Return raw TAF string the object was initialized with """
-        return self.__raw_taf
+        return self._raw_taf
 
     def get_header(self):
         """ Return header dict """
