@@ -8,7 +8,7 @@ class TAF(object):
     """ TAF "envelope" parser """
 
     def __init__(self, string):
-        """ 
+        """
         Initializes the object with TAF/METAR report text.
 
         Args:
@@ -36,7 +36,7 @@ class TAF(object):
 
         # Initialize header part
         self._taf_header = self._init_header(self._raw_taf)
-        
+
         if self._taf_header['form'] == 'metar':
             self._weather_groups.append(self._parse_group(self._raw_taf))
         else:
@@ -67,16 +67,16 @@ class TAF(object):
             (TAF)?    # TAF header (at times missing or duplicate)
             \s*
             (?P<type> (COR|AMD|RTD)){0,1} # Corrected/Amended/Delayed
-             
+
             \s* # There may or may not be space as COR/AMD/RTD is optional
             (?P<icao_code> [A-Z]{4}) # Station ICAO code
-            
+
             \s* # at some aerodromes does not appear
             (?P<origin_date> \d{0,2}) # at some aerodromes does not appear
             (?P<origin_hours> \d{0,2}) # at some aerodromes does not appear
             (?P<origin_minutes> \d{0,2}) # at some aerodromes does not appear
             Z? # Zulu time (UTC, that is) # at some aerodromes does not appear
-            
+
             \s*
             (?P<valid_from_date> \d{0,2})
             (?P<valid_from_hours> \d{0,2})
@@ -90,7 +90,7 @@ class TAF(object):
             (METAR)?    # METAR header (at times missing or duplicate)
             \s*
             (?P<icao_code> [A-Z]{4}) # Station ICAO code
-            
+
             \s* # at some aerodromes does not appear
             (?P<origin_date> \d{0,2}) # at some aerodromes does not appear
             (?P<origin_hours> \d{0,2}) # at some aerodromes does not appear
@@ -99,10 +99,10 @@ class TAF(object):
             \s+
             (?P<type> (COR){0,1}) # Corrected # TODO: Any other values possible?
         """
-        
+
         header_taf = re.match(taf_header_pattern, string, re.VERBOSE)
         header_metar = re.match(metar_header_pattern, string, re.VERBOSE)
-        
+
         # The difference between a METAR and TAF header isn't that big
         # so it's likely to get both regex to match. TAF is a bit more specific so if
         # both regex match then we're most likely dealing with a TAF string.
@@ -114,7 +114,7 @@ class TAF(object):
             header_dict['form'] = 'metar'
         else:
             raise MalformedTAF("No valid TAF/METAR header found")
-        
+
         return header_dict
 
 
@@ -126,9 +126,9 @@ class TAF(object):
 
         Raises:
             MalformedTAF: Group decoding error
-        
+
         """
-        
+
         taf_group_pattern = """
             (?:FM|(?:PROB(?:\d{1,2})\s*(?:TEMPO)?)|TEMPO|BECMG|[\S\s])[A-Z0-9\+\-/\s$]+?(?=FM|PROB|TEMPO|BECMG|$)
         """
@@ -146,10 +146,10 @@ class TAF(object):
 
     def _parse_group(self, string):
         group = {}
-        
+
         if self._taf_header['form'] == "taf":
             group["header"] = self._parse_group_header(string)
-        
+
         if self._taf_header['form'] == "metar":
             group["temperature"] = self._parse_temperature(string)
             group["pressure"] = self._parse_pressure(string)
@@ -162,14 +162,13 @@ class TAF(object):
         group["windshear"] = self._parse_wind_shear(string)
 
         return(group)
-        
-         
+
     def _parse_group_header(self, string):
         # From header pattern
         fm_pattern = """
             (?P<type> FM) (?P<from_date>\d{2}) (?P<from_hours>\d{2})(?P<from_minutes> \d{2})
         """
-        
+
         # PROB|TEMPO|BECMG header pattern, they have almost the same format
         ptb_pattern = """
             (?P<type> (?:PROB(?P<probability>\d{1,2})\s*(?:TEMPO)?)|TEMPO|BECMG)
@@ -236,7 +235,7 @@ class TAF(object):
         visibility_sm = re.search(visibility_pattern, string, re.VERBOSE)
         if visibility_sm:
             visibility = visibility_sm.groupdict()
-         
+
         # Metric style
         visibility_meters = re.search(visibility_meters_pattern, string, re.VERBOSE)
         if visibility_meters:
@@ -269,13 +268,8 @@ class TAF(object):
 
         cloud_layers = re.finditer(clouds_pattern, string, re.VERBOSE)
         for layer in cloud_layers:
-            # SKC or CLR mean "sky clear", nothing to do
-#            if layer.group("layer") == "SKC" or layer.group("layer") == "CLR":
-#                clouds = []
-#                break
- #           else:
             clouds.append(layer.groupdict())
-          
+
         return(clouds)
 
     def _parse_vertical_visibility(self, string):
@@ -302,7 +296,7 @@ class TAF(object):
           ( (?: \+|\-|VC|RE|MI|BC|DR|BL|SH|TS|FZ|PR|DZ|RA|SN|SG|IC|PL|GR|GS|UP|BR|FG|FU|DU|SA|HZ|PY|VA|PO|SQ|FC|SS|DS)+ )
           (?= \s|$)
         """
-        
+
         weather = []
 
         # At first, find all weather strings in the TAF weather group or METAR string.
@@ -312,7 +306,7 @@ class TAF(object):
             modifiers = []
             phenomenons = []
 
-            # Find all intensity descriptors...            
+            # Find all intensity descriptors...
             while re.match('(\+|\-|VC|RE)', word):
                 parsed_intensity = re.match('(\+|\-|VC|RE)', word)
                 intensities.append(parsed_intensity.group(0))

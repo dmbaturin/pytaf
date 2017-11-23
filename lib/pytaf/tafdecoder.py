@@ -28,11 +28,11 @@ class Decoder(object):
             if form == "metar":
                 if group["temperature"]:
                     result += "    Temperature: %s\n" % self._decode_temperature(group["temperature"])
-            
+
                 if group["pressure"]:
                     result += "    Pressure: %s\n" % self._decode_pressure(group["pressure"])
-            
-            # Both TAF and METAR                    
+
+            # Both TAF and METAR
             if group["wind"]:
                 result += "    Wind: %s \n" % self._decode_wind(group["wind"])
 
@@ -47,7 +47,7 @@ class Decoder(object):
 
             if group["windshear"]:
                 result += "    Windshear: %s\n" % self._decode_windshear(group["windshear"])
-           
+
             result += " \n"
 
         if self._taf.get_maintenance():
@@ -87,7 +87,7 @@ class Decoder(object):
                 result += "METAR corrected for "
             else:
                 result += "METAR for "
-            
+
             _header["origin_date"] = _header["origin_date"] + self._get_ordinal_suffix(_header["origin_date"])
 
             result += ("%(icao_code)s issued %(origin_hours)s:%(origin_minutes)s UTC on the %(origin_date)s")
@@ -116,30 +116,29 @@ class Decoder(object):
                 _header["till_date"] = _header["till_date"] + till_suffix
 
             if _header["type"] == "FM":
-                result += from_str % { "from_date":    _header["from_date"], 
+                result += from_str % { "from_date":    _header["from_date"],
                                        "from_hours":   _header["from_hours"],
                                        "from_minutes": _header["from_minutes"] }
             elif _header["type"] == "PROB%s" % (_header["probability"]):
                 result += prob_str % { "probability": _header["probability"],
-                                       "from_date":   _header["from_date"], 
+                                       "from_date":   _header["from_date"],
                                        "from_hours":  _header["from_hours"],
                                        "till_date":   _header["till_date"],
                                        "till_hours":  _header["till_hours"] }
             elif "PROB" in _header["type"] and "TEMPO" in _header["type"]:
                 result += prob_tempo_str % { "probability": _header["probability"],
-                                           "from_date":   _header["from_date"], 
+                                           "from_date":   _header["from_date"],
                                            "from_hours":  _header["from_hours"],
                                            "till_date":   _header["till_date"],
                                            "till_hours":  _header["till_hours"] }
-                                       
             elif _header["type"] == "TEMPO":
-                result += tempo_str % { "from_date":  _header["from_date"], 
-                                        "from_hours": _header["from_hours"], 
-                                        "till_date":  _header["till_date"], 
+                result += tempo_str % { "from_date":  _header["from_date"],
+                                        "from_hours": _header["from_hours"],
+                                        "till_date":  _header["till_date"],
                                         "till_hours": _header["till_hours"] }
             elif _header["type"] == "BECMG":
-                result += becmg_str % { "from_date":  _header["from_date"], 
-                                        "from_hours": _header["from_hours"], 
+                result += becmg_str % { "from_date":  _header["from_date"],
+                                        "from_hours": _header["from_hours"],
                                         "till_date":  _header["till_date"],
                                         "till_hours": _header["till_hours"] }
 
@@ -282,7 +281,7 @@ class Decoder(object):
             "SS" : "sand storm",
             "DS" : "dust storm",
         }
-        
+
         weather_txt_blocks = []
 
         # Check for special cases first. If a certain combination is found
@@ -329,10 +328,10 @@ class Decoder(object):
             weather_txt = ""
             for intensity in intensities_pre:
                 weather_txt += dict_intensities[intensity] + " "
-            
+
             for modifier in modifiers_pre:
                 weather_txt += dict_modifiers[modifier] + " "
-            
+
             phenomenons = phenomenons_pre + phenomenons_post
             cnt = len(phenomenons)
             for phenomenon in phenomenons:
@@ -343,7 +342,7 @@ class Decoder(object):
                     weather_txt += " and "
                 cnt = cnt-1
             weather_txt += " "
-            
+
             for modifier in modifiers_post:
                 weather_txt += dict_modifiers[modifier] + " "
 
@@ -360,31 +359,31 @@ class Decoder(object):
         weather_txt_full += weather_txt_blocks[-1]
 
         return(weather_txt_full)
-    
+
     def _decode_temperature(self, temperature, unit='C'):
         if temperature["air_prefix"] == 'M':
             air_c = int(temperature["air"])*-1
         else:
             air_c = int(temperature["air"])
-            
+
         if temperature["dewpoint_prefix"] == 'M':
             dew_c = int(temperature["dewpoint"])*-1
         else:
             dew_c = int(temperature["dewpoint"])
-        
+
         if unit == 'C':
             air_txt = air_c
             dew_txt = dew_c
-        
+
         if unit == 'F':
             air_f = int(round(air_c*1.8+32))
             dew_f = int(round(dew_c*1.8+32))
             air_txt = air_f
             dew_txt = dew_f
-        
+
         result = "air at %s°%s, dewpoint at %s°%s" % (air_txt, unit, dew_txt, unit)
         return(result)
-    
+
     def _decode_pressure(self, pressure):
         result = "%s hPa" % (pressure["athm_pressure"])
         return(result)
@@ -412,4 +411,3 @@ class Decoder(object):
             suffix = "rd"
 
         return(suffix)
-        
