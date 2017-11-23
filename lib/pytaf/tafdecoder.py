@@ -203,6 +203,9 @@ class Decoder(object):
 
             if layer["layer"] == "CAVU":
                 return "ceiling and visibility unrestricted"
+            
+            if layer["layer"] == "VV///":
+                return "Sky Obscured"
 
             if layer["layer"] == "SCT":
                 layer_type = "scattered"

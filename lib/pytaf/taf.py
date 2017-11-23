@@ -258,13 +258,20 @@ class TAF(object):
         """
 
         special_case_pattern = """ (SKC|CLR|NSC|CAVOK|CAVU) """
-
+        special_case_vv = """VV///"""
+        
         clouds = []
 
         clear = re.search(special_case_pattern, string, re.VERBOSE)
         if clear:
             clouds.append({"layer": clear.group(0)})
             return(clouds)
+        
+        vv = re.search(special_case_vv, string, re.VERBOSE)
+        if vv:
+            clouds.append({"layer": vv.group(0)})
+            return(clouds)
+        
 
         cloud_layers = re.finditer(clouds_pattern, string, re.VERBOSE)
         for layer in cloud_layers:
