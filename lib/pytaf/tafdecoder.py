@@ -288,9 +288,9 @@ class Decoder(object):
         # then skip parsing the whole weather string and return a defined string
         # immediately
         for group in weather:
-            # +FC = Tornado or Watersprout
+            # +FC = Tornado or Waterspout
             if "+" in group["intensity"] and "FC" in group["phenomenon"]:
-                weather_txt_blocks.append("tornado or watersprout")
+                weather_txt_blocks.append("tornado or waterspout")
                 continue
 
             # Sort the elements of the weather string, if no special combi-
