@@ -2,7 +2,7 @@ from setuptools import setup
 
 
 setup(name='pytaf',
-      version='1.2.0',
+      version='1.2.1',
       description='TAF (Terminal Aerodrome Forecast) and METAR parser and decoder',
       url='http://github.com/dmbaturin/pytaf',
       author='Daniil Baturin',
