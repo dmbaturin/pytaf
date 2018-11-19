@@ -66,7 +66,7 @@ class TAF(object):
             ^
             (TAF)?    # TAF header (at times missing or duplicate)
             \s*
-            (?P<type> (COR|AMD|AMD\sCOR|COR\sAMD|RTD)){0,1} # Corrected/Amended/Amended and Corrected|Corrected and Amended|Delayed
+            (?P<type> (COR|AMD|AMD\sCOR|COR\sAMD|RTD)){0,1}
 
             \s* # There may or may not be space as COR/AMD/RTD is optional
             (?P<icao_code> [A-Z]{4}) # Station ICAO code
