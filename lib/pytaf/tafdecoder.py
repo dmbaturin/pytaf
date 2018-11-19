@@ -71,13 +71,17 @@ class Decoder(object):
             elif _header["type"] == "COR":
                 result += "TAF corrected for "
             elif _header["type"] == "RTD":
-               result += "TAF related for "
+                result += "TAF delayed for "
+            elif _header["type"] == "AMD COR":
+                result += "TAF amended and corrected for "
+            elif _header["type"] == "COR AMD":
+                result += "TAF corrected and amended for "
             else:
                 result += "TAF for "
 
             # Add ordinal suffix
             _header["origin_date"] = _header["origin_date"] + self._get_ordinal_suffix(_header["origin_date"])
-            _header["valid_from_date"] = _header["valid_from_date"] + self._get_ordinal_suffix(_header["valid_from_date"]) 
+            _header["valid_from_date"] = _header["valid_from_date"] + self._get_ordinal_suffix(_header["valid_from_date"])
             _header["valid_till_date" ] = _header["valid_till_date"] + self._get_ordinal_suffix(_header["valid_till_date"])
 
             result += ("%(icao_code)s issued %(origin_hours)s:%(origin_minutes)s UTC on the %(origin_date)s, " 
@@ -205,7 +209,7 @@ class Decoder(object):
 
             if layer["layer"] == "CAVU":
                 return "ceiling and visibility unrestricted"
-            
+
             if layer["layer"] == "VV///":
                 return "Sky Obscured"
 
