@@ -69,13 +69,17 @@ class Decoder(object):
             elif _header["type"] == "COR":
                 result += "TAF corrected for "
             elif _header["type"] == "RTD":
-               result += "TAF related for "
+                result += "TAF delayed for "
+            elif _header["type"] == "AMD COR":
+                result += "TAF amended and corrected for "
+            elif _header["type"] == "COR AMD":
+                result += "TAF corrected and amended for "
             else:
                 result += "TAF for "
 
             # Add ordinal suffix
             _header["origin_date"] = _header["origin_date"] + self._get_ordinal_suffix(_header["origin_date"])
-            _header["valid_from_date"] = _header["valid_from_date"] + self._get_ordinal_suffix(_header["valid_from_date"]) 
+            _header["valid_from_date"] = _header["valid_from_date"] + self._get_ordinal_suffix(_header["valid_from_date"])
             _header["valid_till_date" ] = _header["valid_till_date"] + self._get_ordinal_suffix(_header["valid_till_date"])
 
             result += ("%(icao_code)s issued %(origin_hours)s:%(origin_minutes)s UTC on the %(origin_date)s, " 
@@ -203,7 +207,7 @@ class Decoder(object):
 
             if layer["layer"] == "CAVU":
                 return "ceiling and visibility unrestricted"
-            
+
             if layer["layer"] == "VV///":
                 return "Sky Obscured"
 
@@ -385,7 +389,7 @@ class Decoder(object):
             air_txt = air_f
             dew_txt = dew_f
 
-        result = "air at %s°%s, dewpoint at %s°%s" % (air_txt, unit, dew_txt, unit)
+        result = "air at %s%s, dewpoint at %s%s" % (air_txt, unit, dew_txt, unit)
         return(result)
 
     def _decode_pressure(self, pressure):
