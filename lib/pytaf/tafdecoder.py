@@ -389,7 +389,7 @@ class Decoder(object):
             air_txt = air_f
             dew_txt = dew_f
 
-        result = "air at %s°%s, dewpoint at %s°%s" % (air_txt, unit, dew_txt, unit)
+        result = "air at %s°%s, dewpoint at %s%s" % (air_txt, unit, dew_txt, unit)
         return(result)
 
     def _decode_pressure(self, pressure):
