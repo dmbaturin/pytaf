@@ -70,7 +70,7 @@ and should not be used for flight planning (at least not without inspecting
 the original undecoded report).
 
 Information about the US TAF format can be found at NOAA website:
-http://aviationweather.gov/static/help/taf-decode.php
+https://aviationweather.gov/taf/decoder
 
 You can get raw and interpreted reports from there too:
 http://www.aviationweather.gov/adds/tafs/
